@@ -1,26 +1,43 @@
 package crawler
 
 import (
-	"io"
+	"html"
+	"io/ioutil"
 	"net/http"
-	"os"
+	"net/url"
+	"regexp"
 )
 
-func init() {
-	r, err := http.Get("https://ferrari-cdn.thron.com/api/xcontents/resources/delivery/getThumbnail/ferrari/0x640/53446961-5c54-49d4-9e2a-92bdfc90497b.jpg?v=102")
+func Images() ([]string, error) {
+	var (
+		err        error
+		imgs       []string
+		matches    [][]string
+		body       []byte
+		content    string
+		findImages = regexp.MustCompile("<img.*?src=\"(.*?)\"")
+	)
+	r, err := http.Get("https://www.ferrari.com/zh-CN/auto/car-range")
 	if err != nil {
 		panic(err)
 	}
 	defer func() { _ = r.Body.Close() }()
-
-	f, err := os.Create("../asset/dream_car.jpg")
-	if err != nil {
-		panic(err)
+	if body, err = ioutil.ReadAll(r.Body); err != nil {
+		return imgs, err
 	}
-	defer func() { _ = f.Close() }()
+	content = html.UnescapeString(string(body))
+	matches = findImages.FindAllStringSubmatch(content, -1)
+	for _, val := range matches {
+		var imgUrl *url.URL
 
-	_, err = io.Copy(f, r.Body)
-	if err != nil {
-		panic(err)
+		// Parse the image URL
+		if imgUrl, err = url.Parse(val[1]); err != nil {
+			return imgs, err
+		}
+		if imgUrl.IsAbs() {
+			imgs = append(imgs, imgUrl.String())
+		}
 	}
+
+	return imgs, err
 }

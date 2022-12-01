@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Using range in html/template</title>
+</head>
+<style>
+    .box{
+        display: flex;
+        /* 水平置中 */
+        justify-content: center;    
+    }
+</style>
+<body>
+    {{ range .Images }}
+    <div class="box">
+        <img src="{{ . }}" />
+    </div>
+    {{ end }}
+    
+</body>
+</html>
