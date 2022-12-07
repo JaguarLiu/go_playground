@@ -10,9 +10,14 @@ import (
 )
 
 func Login(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "GET" {
+		var tmpl = template.Must(template.ParseFiles("views/login.html"))
+		tmpl.Execute(w, nil)
+		return
+	}
 	if r.Method == "POST" {
-		account := r.PostForm.Get("account")
-		password := r.PostForm.Get("password")
+		account := r.FormValue("account")
+		password := r.FormValue("password")
 		user := auth.User{Account: account,
 			Password: password,
 		}
@@ -29,8 +34,10 @@ func Login(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprint(w, "{\"message\": \""+err.Error()+"\"}")
 			return
 		}
-		w.WriteHeader(http.StatusOK)
-		fmt.Fprint(w, "{\"token\": \""+token+"\"}")
+		w.Header().Add("Authoration", token)
+		http.Redirect(w, r, "/", http.StatusOK)
+
+		// fmt.Fprint(w, "{\"token\": \""+token+"\"}")
 		return
 	}
 	w.WriteHeader(http.StatusMethodNotAllowed)

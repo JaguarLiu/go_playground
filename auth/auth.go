@@ -37,7 +37,7 @@ func (srv *Auth) CreateToken(user User) (string, error) {
 		Subject:   user.Account,
 	}
 	tokenClaims := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	token, err := tokenClaims.SignedString("123456")
+	token, err := tokenClaims.SignedString([]byte("123456"))
 	if err != nil {
 		return "", err
 	}
